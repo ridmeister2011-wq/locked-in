@@ -181,6 +181,16 @@ details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;just
 <li>People are more motivated by a new start (a Monday, the 1st of a month) than by a random day (Dai, Milkman &amp; Riis 2014).</li>
 <li>Game features like points and levels have a small real effect on motivation (g = 0.36), and work best when you combine competing with teaming up (Sailer &amp; Homner 2020).</li>
 </ol></details></div>
+<h2>Reminders</h2>
+<div class="panel" id="rpanel">
+ <div class="ph"><b>Streak-saver notification</b><small id="rstate">Off</small></div>
+ <p class="note" id="rhint">One notification each evening. It warns you if your streak is about to end, or confirms it's safe.</p>
+ <label class="note" for="rhour">Remind me at</label>
+ <select id="rhour" style="width:100%;min-height:44px;margin-top:6px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:16px Inter;padding:0 10px">
+  <option value="18">6:00 PM</option><option value="19">7:00 PM</option><option value="20" selected>8:00 PM</option><option value="21">9:00 PM</option><option value="22">10:00 PM</option></select>
+ <div class="row"><button class="btn" id="ron">Turn on reminders</button></div>
+ <div id="rcode" hidden><p class="note">Last step: copy this code and send it to whoever set up your app.</p><textarea id="rtext" readonly style="min-height:80px;font-size:12px"></textarea><div class="row"><button class="btn sec" id="rcopy">Copy code</button></div></div>
+</div>
 <p class="foot">Progress is stored on this device only.</p></section>
 </main>
 <nav class="tabbar"><button class="tb" data-t="today" aria-label="Today"><svg><use href="#i-lock"/></svg><span>Today</span></button><button class="tb" data-t="journal" aria-label="Journal"><svg><use href="#i-pen"/></svg><span>Journal</span></button><button class="tb" data-t="practice" aria-label="Practice"><svg><use href="#i-note"/></svg><span>Practice</span></button><button class="tb" data-t="me" aria-label="You"><svg><use href="#i-bolt"/></svg><span>You</span></button></nav>
@@ -274,6 +284,22 @@ function hist(){const ks=Object.keys(S.days).filter(k=>k<T()&&(S.days[k].journal
  for(const k of ks){const d=document.createElement('div');d.className='jh';const sm=document.createElement('small');
   sm.textContent=new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});const pp=document.createElement('p');pp.textContent=S.days[k].journal;d.append(sm,pp);el.append(d)}}
 go((location.hash||'').slice(1));
+// reminders: subscribe to web push; a scheduled GitHub Action sends one push per evening
+const VAPID='BCvwWJO-NXxtY9sIqSm5yqs2vMRxQOGHzDItiT32Qs5atbyclh-bZigpoFjtMuIf25-mlcUUguHa-st0zGSKccY';
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+if(!('PushManager' in window)||!standalone){$('rhint').textContent=standalone?'This phone does not support notifications (needs iOS 16.4 or newer).':'Open Locked In from its home-screen icon to turn on reminders.';$('ron').disabled=true;$('ron').style.opacity=.4}
+if(S.remind){$('rhour').value=S.remind.h;$('rstate').textContent='On';$('ron').textContent='Show my code again'}
+const b64=k=>{const p=(k+'='.repeat((4-k.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/');return Uint8Array.from(atob(p),c=>c.charCodeAt(0))};
+$('ron').onclick=async()=>{try{
+ if(await Notification.requestPermission()!=='granted'){toast('Notifications blocked in Settings');return}
+ const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription()||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(VAPID)});
+ const h=+$('rhour').value,d=new Date();d.setHours(h,0,0,0);S.remind={h};save();
+ $('rtext').value=btoa(JSON.stringify({s:sub.toJSON(),u:d.getUTCHours()}));$('rcode').hidden=false;$('rstate').textContent='Almost on'}
+ catch(e){toast('Could not turn on: '+e.message)}};
+$('rcopy').onclick=async()=>{try{await navigator.clipboard.writeText($('rtext').value);toast('Code copied')}catch(e){$('rtext').select()}};
+// share today's status with the service worker (it can't read localStorage)
+let lastStat='';setInterval(()=>{const d=D(),left=REQ.filter(([k])=>!ok(d,k)).length,st=JSON.stringify({date:T(),left,streak:streak()});
+ if(st!==lastStat&&'caches' in window){lastStat=st;caches.open('li-status').then(c=>c.put('status',new Response(st))).catch(()=>{})}},2000);
 (()=>{const f={brushAM:1,brushPM:1,skinAM:1,skinPM:1,journal:'x'.repeat(60),musicMin:60,light:1};console.assert(doneReq(f)&&!doneReq({...f,musicMin:59})&&lvlOf(xpFor(3))===3,'self-check failed')})();
 render();
 }
