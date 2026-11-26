@@ -148,6 +148,7 @@ details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;just
  <div class="big" id="itime">0:00 <small>/ 60:00</small></div>
  <div class="track"><i id="iprog" style="width:0"></i></div>
  <div class="row"><button class="btn" id="istart">Start session</button><button class="btn sec" id="iadd">Log 15 min</button></div>
+ <label class="note" style="display:flex;gap:10px;align-items:center;margin-top:12px"><input type="checkbox" id="focusOn" style="width:20px;height:20px;min-height:0;margin:0"> Turn on my Practice Focus when I start (needs the "Lock In Practice" shortcut)</label>
 </div>
 
 <h2>After-school energy</h2>
@@ -255,7 +256,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('.item');if(!b)re
  const xp=(BON.find(x=>x[0]===k)||[0,0,0,10])[3];d[k]=!d[k];S.xp=Math.max(0,S.xp+(d[k]?xp:-xp));if(d[k])toast(`+${xp} XP`);save();render()});
 $('journal').value=D().journal;$('journal').oninput=e=>{D().journal=e.target.value;save();render()};
 function stopMusic(){const d=D();if(d.musicStart){d.musicMin+=(Date.now()-d.musicStart)/60000;d.musicStart=0}}
-$('istart').onclick=()=>{const d=D();if(d.musicStart)stopMusic();else if(d.musicMin<60)d.musicStart=Date.now();save();render()};
+$('istart').onclick=()=>{const d=D();if(d.musicStart)stopMusic();else if(d.musicMin<60){d.musicStart=Date.now();if(S.focus)location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Lock In Practice')}save();render()};
+$('focusOn').checked=!!S.focus;$('focusOn').onchange=e=>{S.focus=e.target.checked;save()};
 $('iadd').onclick=()=>{stopMusic();D().musicMin+=15;save();render()};
 setInterval(()=>{const d=D();if(d.musicStart&&d.musicMin+(Date.now()-d.musicStart)/60000>=60){stopMusic();save()}render()},1000);
 let napEnd=0,ac;
