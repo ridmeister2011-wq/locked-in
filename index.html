@@ -289,7 +289,7 @@ go((location.hash||'').slice(1));
 // reminders: subscribe to web push; a scheduled GitHub Action sends one push per evening
 const VAPID='BCvwWJO-NXxtY9sIqSm5yqs2vMRxQOGHzDItiT32Qs5atbyclh-bZigpoFjtMuIf25-mlcUUguHa-st0zGSKccY';
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-if(window.Capacitor){$('rhint').textContent='Reminders work in the home-screen version of Locked In.';$('ron').disabled=true;$('ron').style.opacity=.4}elseif(!('PushManager' in window)||!standalone){$('rhint').textContent=standalone?'This phone does not support notifications (needs iOS 16.4 or newer).':'Open Locked In from its home-screen icon to turn on reminders.';$('ron').disabled=true;$('ron').style.opacity=.4}
+if(window.Capacitor){$('rhint').textContent='Reminders work in the home-screen version of Locked In.';$('ron').disabled=true;$('ron').style.opacity=.4}else if(!('PushManager' in window)||!standalone){$('rhint').textContent=standalone?'This phone does not support notifications (needs iOS 16.4 or newer).':'Open Locked In from its home-screen icon to turn on reminders.';$('ron').disabled=true;$('ron').style.opacity=.4}
 if(S.remind){$('rhour').value=S.remind.h;$('rstate').textContent='On';$('ron').textContent='Show my code again'}
 const b64=k=>{const p=(k+'='.repeat((4-k.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/');return Uint8Array.from(atob(p),c=>c.charCodeAt(0))};
 $('ron').onclick=async()=>{try{
