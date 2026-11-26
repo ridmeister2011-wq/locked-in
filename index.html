@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Locked In">
+<meta name="theme-color" content="#0c0c0e">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Locked In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm, confident, product-grade; few words
+   IDEA: a combination lock — six quests are six segments of a dial that close the lock
+   PICTURE: segmented progress ring with lock glyph and streak count at the centre
+   COLOUR and TYPE: graphite night, one ember accent, quiet green for done; Inter Tight + Inter
+   LAYOUT: single phone column, grouped iOS-style lists, sticky header */
+:root{--bg:#0c0c0e;--s1:#151518;--s2:#1d1d21;--line:#2a2a30;--ink:#f2f2f4;--mute:#8d8d96;--acc:#ff7a1a;--acc2:#ffb066;--ok:#3ecf8e}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip;
+ padding:0 env(safe-area-inset-right) calc(90px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
+main{max-width:480px;margin:auto;padding:0 18px}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+ padding:calc(12px + env(safe-area-inset-top)) 18px 12px;display:flex;justify-content:space-between;align-items:center;max-width:480px;margin:auto}
+.brand{display:flex;gap:8px;align-items:center;font:700 17px 'Inter Tight',Inter;letter-spacing:-.01em}
+.brand svg{width:22px;height:22px;color:var(--acc)}
+.chip{font-weight:600;font-size:13px;color:var(--mute);background:var(--s1);border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-variant-numeric:tabular-nums}
+h1{font:700 30px/1.1 'Inter Tight',Inter;letter-spacing:-.02em;margin:10px 0 2px}
+.date{color:var(--mute);font-weight:500}
+h2{font:600 13px Inter;color:var(--mute);margin:30px 4px 8px}
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;margin-top:18px}
+.ring{position:relative;width:148px;height:148px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring .n{font:700 40px/1 'Inter Tight';letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ring .l{font-size:12px;color:var(--mute);font-weight:500}
+.ring .lk{width:18px;height:18px;margin:0 auto 4px;color:var(--mute);transition:color .3s}
+.ring.done .lk{color:var(--acc)}
+.seg{transition:stroke .4s}
+.stats{display:grid;gap:10px}
+.stat{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font:600 20px 'Inter Tight';font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--mute)}
+.xpbar{height:4px;background:var(--s2);border-radius:4px;margin-top:8px;overflow:hidden}.xpbar i{display:block;height:100%;background:var(--acc);border-radius:4px;transition:width .5s}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:20px;background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:12px 8px}
+.week div{text-align:center;font-size:11px;color:var(--mute);font-weight:600}
+.week b{display:grid;place-items:center;margin:6px auto 0;width:30px;height:30px;border-radius:50%;font-weight:600;font-size:13px;color:var(--mute);border:1px solid var(--line)}
+.week b.on{background:var(--acc);border-color:var(--acc);color:#1a0b00}.week b.now{border-color:var(--ink);color:var(--ink)}.week b.on.now{border-color:var(--acc2)}
+.list{background:var(--s1);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:60px;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.item:first-child{border-top:0}
+.item:active{background:var(--s2)}
+.ico{flex:none;width:34px;height:34px;border-radius:10px;background:var(--s2);display:grid;place-items:center;color:var(--ink)}
+.ico svg{width:18px;height:18px}
+.tx{flex:1}.tx b{display:block;font-weight:600}.tx small{color:var(--mute);font-size:13px}
+.box{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;transition:all .2s}
+.box svg{width:14px;height:14px;opacity:0;color:#04130b}
+.item.done .box{background:var(--ok);border-color:var(--ok)}.item.done .box svg{opacity:1}
+.item.done .tx b{color:var(--mute)}
+.xp{font-size:12px;color:var(--mute);font-weight:600;font-variant-numeric:tabular-nums}
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:10px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ph b{font-weight:600}.ph small{color:var(--mute);font-size:13px}
+textarea{width:100%;min-height:110px;margin-top:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:16px/1.5 Inter;padding:12px;resize:vertical}
+textarea:focus{border-color:var(--acc);outline:none}
+.big{font:600 40px/1 'Inter Tight';letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:14px 0 10px}
+.big small{font-size:16px;color:var(--mute);font-weight:500}
+.track{height:6px;background:var(--s2);border-radius:6px;overflow:hidden}.track i{display:block;height:100%;background:var(--acc);transition:width .4s}
+.row{display:flex;gap:8px;margin-top:14px}
+.btn{flex:1;min-height:46px;border-radius:12px;border:1px solid transparent;font:600 15px Inter;cursor:pointer;background:var(--ink);color:var(--bg)}
+.btn.sec{background:var(--s2);color:var(--ink);border-color:var(--line)}
+.btn:active{opacity:.8}
+.tips{margin:12px 0 0;padding:0;list-style:none;counter-reset:t}
+.tips li{counter-increment:t;display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid var(--line);color:#d4d4da}
+.tips li::before{content:counter(t);font:600 12px Inter;color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent);width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.tips b{color:var(--ink);font-weight:600}
+.note{font-size:13px;color:var(--mute);margin-top:10px}
+a{color:var(--acc2)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,400%);background:var(--ink);color:var(--bg);font-weight:600;padding:11px 18px;border-radius:12px;transition:transform .35s cubic-bezier(.2,.9,.3,1.2);z-index:9;white-space:nowrap;box-shadow:0 10px 30px #0008}
+.toast.show{transform:translate(-50%,0)}
+.why{margin-top:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 18%,var(--s1)),var(--s1));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.why small{color:var(--mute);font-size:12px;font-weight:600}.why p{margin:4px 0 0;font-weight:600;font-size:16px}
+.why input,.panel input{width:100%;min-height:44px;margin-top:8px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:16px Inter;padding:0 12px}
+.banner{margin-top:12px;font-size:13px;color:var(--acc2);font-weight:600}
+.plan{font-size:12px;color:var(--acc2)}
+details summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between}details summary::after{content:'+';color:var(--mute)}details[open] summary::after{content:'–'}
+.src{font-size:12px;color:var(--mute);margin:10px 0 0;padding-left:18px}.src li{margin:3px 0}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));max-width:480px;margin:auto;
+ background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+.tb{background:none;border:0;color:var(--mute);display:grid;justify-items:center;gap:2px;min-height:50px;font:600 11px Inter;cursor:pointer;border-radius:10px}
+.tb svg{width:22px;height:22px}.tb[aria-current=page]{color:var(--acc)}
+.jh{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0}
+.jh small{color:var(--mute);font-size:12px;font-weight:600}.jh p{margin:4px 0 0;white-space:pre-wrap;color:#d4d4da}
+.empty{color:var(--mute);font-size:14px;text-align:center;padding:24px 0}
+.foot{text-align:center;font-size:12px;color:var(--mute);margin-top:28px}
+@media(max-width:360px){.hero{grid-template-columns:1fr;justify-items:center}.stats{width:100%;grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+ <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+ <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+ <symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+ <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></symbol>
+ <symbol id="i-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+ <symbol id="i-sofa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11V8a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v3"/><path d="M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2z"/><path d="M5 18v2M19 18v2"/></symbol>
+ <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></symbol>
+ <symbol id="i-egg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c4 0 7 6 7 10a7 7 0 0 1-14 0c0-4 3-10 7-10z"/></symbol>
+ <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></symbol>
+ <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 3l18 18"/></symbol>
+ <symbol id="i-glass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12l-1.5 17a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z"/><path d="M6.5 9h11"/></symbol>
+</svg>
+
+<header><div class="brand"><svg><use href="#i-lock"/></svg>Locked In</div><div class="chip"><span id="xp">0</span> XP</div></header>
+<main>
+<section class="tab" id="t-today"><h1 id="greet">Today</h1><div class="date" id="date"></div>
+
+<section class="hero">
+ <div class="ring" id="ring"><svg viewBox="0 0 120 120" id="segs"></svg>
+  <div class="c"><div><svg class="lk"><use href="#i-lock"/></svg><div class="n" id="streak">0</div><div class="l">day streak</div></div></div></div>
+ <div class="stats">
+  <div class="stat"><b><span id="shield">0</span> shield · best <span id="best">0</span></b><span>a shield saves your streak on a missed day</span></div>
+  <div class="stat"><b><span id="cnt">0</span> / 7</b><span id="status">quests to lock in today</span></div>
+  <div class="stat"><b id="lvl">Level 1</b><span id="lvlnext">0 XP to next level</span><div class="xpbar"><i id="lvlbar" style="width:0"></i></div></div>
+ </div>
+</section>
+<div class="week" id="week"></div>
+<div class="banner" id="banner"></div>
+<div class="why" id="whybox"><small>Why you're locking in</small><p id="whytext"></p><input id="whyin" placeholder="e.g. I want to be the strongest version of me by summer" aria-label="Your reason" hidden></div>
+
+<h2>Daily quests · required for streak</h2>
+<div class="list" id="quests"></div>
+
+<h2>Bonus habits</h2>
+<div class="list" id="bonus"></div>
+
+</section>
+<section class="tab" id="t-journal" hidden><h1>Journal</h1><div class="date">One win, one lesson, one thing you're grateful for</div><div class="panel" id="jpanel">
+ <div class="ph"><b>Journal</b><small id="jcount">0 / 60</small></div>
+ <textarea id="journal" placeholder="Win — &#10;Lesson — &#10;Grateful for — "></textarea>
+</div>
+
+<h2>Previous entries</h2><div id="jhist"></div></section>
+<section class="tab" id="t-practice" hidden><h1>Practice</h1><div class="date">Instrument and after-school energy</div><div class="panel" id="mpanel">
+ <div class="ph"><b>Instrument practice</b><small>Goal 60 min</small></div>
+ <div class="big" id="itime">0:00 <small>/ 60:00</small></div>
+ <div class="track"><i id="iprog" style="width:0"></i></div>
+ <div class="row"><button class="btn" id="istart">Start session</button><button class="btn sec" id="iadd">Log 15 min</button></div>
+</div>
+
+<h2>After-school energy</h2>
+<div class="panel">
+ <div class="ph"><b>Power nap</b><small>20 min max · before 4 pm</small></div>
+ <div class="big" id="ntime">20:00</div>
+ <div class="row"><button class="btn" id="nstart">Start nap timer</button></div>
+ <p class="note">Set a phone alarm as backup. The timer can't ring while the screen is locked.</p>
+ <ol class="tips">
+  <li><span><b>Keep your bed for night sleep.</b> A long nap late in the day uses up the sleep drive your body built up, so you're wide awake at bedtime.</span></li>
+  <li><span><b>Take 10 minutes outside</b> when you get home. Daylight is the strongest signal that tells your body clock to stay awake.</span></li>
+  <li><span><b>Have a protein snack and some water</b>, then go straight into practice. Being upright and busy beats the crash.</span></li>
+  <li><span><b>Keep the same bedtime and wake time</b> every day, weekends included (within about an hour). Teens need 8–10 hours. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5078711">AASM</a></span></li>
+  <li><span><b>If you're still exhausted for weeks</b> on 8+ hours of sleep, talk to a parent and a doctor. Sleep apnea and low iron are common causes.</span></li>
+ </ol>
+</div>
+</section>
+<section class="tab" id="t-me" hidden><h1>You</h1><div class="date">Your why, plans and the science</div><h2>Your system</h2>
+<div class="panel"><details open><summary>Plans, pairings and why this works</summary>
+<p class="note">If-then plans: tie each quest to something you already do. Your plan shows up under that quest.</p>
+<div id="plans"></div>
+<p class="note" style="margin-top:16px">Pairing: pick something you love that you only get during practice (a playlist, a podcast, a snack). <i>Only</i> during practice.</p>
+<input id="pair" placeholder="e.g. My favorite podcast only while I do skincare" aria-label="Pairing">
+<div class="row"><button class="btn sec" id="editwhy">Edit my why</button><button class="btn sec" id="share">Copy streak to share</button></div>
+<ol class="src">
+<li>Plans like "after X, I'll do Y" made reaching goals much more likely across 94 studies (Gollwitzer &amp; Sheeran 2006).</li>
+<li>Pairing a treat with a chore: people allowed audiobooks only at the gym went 51% more often (Milkman et al. 2014, Management Science).</li>
+<li>Broken streaks lower motivation, and being able to repair them helps, so this app gives you streak shields (Silverman &amp; Barasch 2023, J Consumer Research).</li>
+<li>People speed up as they get close to a goal, so the app shows how many quests you have left (Kivetz et al. 2006, J Marketing Research).</li>
+<li>Choosing your own reason (autonomy), seeing yourself improve (competence) and having people with you (relatedness) are what drive lasting motivation (Ryan &amp; Deci 2000, Self-Determination Theory).</li>
+<li>People are more motivated by a new start (a Monday, the 1st of a month) than by a random day (Dai, Milkman &amp; Riis 2014).</li>
+<li>Game features like points and levels have a small real effect on motivation (g = 0.36), and work best when you combine competing with teaming up (Sailer &amp; Homner 2020).</li>
+</ol></details></div>
+<p class="foot">Progress is stored on this device only.</p></section>
+</main>
+<nav class="tabbar"><button class="tb" data-t="today" aria-label="Today"><svg><use href="#i-lock"/></svg><span>Today</span></button><button class="tb" data-t="journal" aria-label="Journal"><svg><use href="#i-pen"/></svg><span>Journal</span></button><button class="tb" data-t="practice" aria-label="Practice"><svg><use href="#i-note"/></svg><span>Practice</span></button><button class="tb" data-t="me" aria-label="You"><svg><use href="#i-bolt"/></svg><span>You</span></button></nav>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const REQ=[["brushAM","sun","Brush teeth","Morning · 2 min"],["brushPM","moon","Brush teeth","Night · 2 min + floss"],
+["skinAM","drop","Skincare","Morning · cleanse, moisturize, SPF"],["skinPM","drop","Skincare","Night · cleanse, moisturize"],
+["journal","pen","Journal","Win, lesson, gratitude"],["music","note","Instrument","60 minutes of practice"],["light","sun","Daylight","10 min outside · morning or after school"]];
+const BON=[["noBed","sofa","Stayed out of bed after school",30],["workout","bolt","Workout or 60 min active",20],["protein","egg","Protein at 3 meals",10],
+["read","book","Read 20 minutes",10],["phone","phone","Phone out of bedroom",15],["water","glass","Water, no soda",5]];
+const day=d=>{const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)};
+const T=()=>day(Date.now());
+let S;try{S=JSON.parse(localStorage.lockedIn||'{}')}catch(e){S={}}
+S.days=S.days||{};S.xp=S.xp||0;S.shields=S.shields??1;S.frozen=S.frozen||{};S.plans=S.plans||{};S.best=S.best||0;
+// daylight quest added later: past days keep counting so old streaks aren't broken
+if(!S.lightFrom){S.lightFrom=T();for(const k in S.days)if(k<S.lightFrom)S.days[k].light=1}
+const D=()=>S.days[T()]||(S.days[T()]={journal:"",musicMin:0});
+const save=()=>{try{localStorage.lockedIn=JSON.stringify(S)}catch(e){}};
+const $=id=>document.getElementById(id);
+const ok=(d,k)=>k==="journal"?(d.journal||"").trim().length>=60:k==="music"?d.musicMin>=60:!!d[k];
+const doneReq=d=>!!d&&REQ.every(([k])=>ok(d,k));
+const cnt=k=>doneReq(S.days[k])||!!S.frozen[k];
+function streak(){let n=0,t=new Date();if(!cnt(day(t)))t.setDate(t.getDate()-1);while(cnt(day(t))){n++;t.setDate(t.getDate()-1)}return n}
+// shields: auto-cover missed days (oldest first) if a streak was running before them
+(function useShields(){const miss=[];let t=new Date();t.setDate(t.getDate()-1);
+ while(!cnt(day(t))&&miss.length<7){miss.push(day(t));t.setDate(t.getDate()-1)}
+ if(miss.length&&cnt(day(t))&&miss.length<=S.shields){miss.forEach(k=>S.frozen[k]=1);S.shields-=miss.length;S._shieldMsg=miss.length}})();
+const lvlOf=xp=>1+Math.floor(Math.sqrt(xp/50)),xpFor=l=>50*(l-1)**2;
+function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)}
+const ic=n=>`<svg><use href="#i-${n}"/></svg>`;
+const item=(k,i,n,s,done,xp)=>`<button class="item ${done?'done':''}" data-k="${k}" aria-pressed="${done}"><span class="ico">${ic(i)}</span><span class="tx"><b>${n}</b><small>${s}</small></span>${xp?`<span class="xp">+${xp}</span>`:''}<span class="box">${ic('check')}</span></button>`;
+// ring of 6 segments
+const R=52,C=2*Math.PI*R,gap=6,len=C/REQ.length-gap;
+$('segs').innerHTML=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="transparent"/>`+REQ.map((_,i)=>`<circle class="seg" cx="60" cy="60" r="${R}" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-i*C/REQ.length-gap/2}"/>`).join('');
+const segs=[...document.querySelectorAll('.seg')];
+let wasLocked=null;
+function render(){const d=D();
+ $('quests').innerHTML=REQ.map(([k,i,n,s])=>item(k,i,n,s,ok(d,k),k==="journal"||k==="music"?0:10)).join('');
+ $('bonus').innerHTML=BON.map(([k,i,n,xp])=>item(k,i,n,"Bonus",!!d[k],xp)).join('');
+ const c=REQ.filter(([k])=>ok(d,k)).length,locked=c===REQ.length,st=streak();
+ segs.forEach((s,i)=>s.style.stroke=i<c?(locked?'var(--acc)':'var(--ink)'):'var(--s2)');
+ $('ring').classList.toggle('done',locked);
+ $('cnt').textContent=c;$('shield').textContent=S.shields;S.best=Math.max(S.best,st);$('best').textContent=S.best;
+ $('quests').querySelectorAll('.item').forEach(b=>{const pl=S.plans[b.dataset.k];if(pl)b.querySelector('small').insertAdjacentHTML('beforeend','<br><span class="plan"></span>'),b.querySelector('.plan').textContent=pl});$('streak').textContent=st;$('xp').textContent=S.xp;
+ $('status').textContent=locked?'Locked in for today':c>=REQ.length-2?(REQ.length-c)+' to go, almost there':'quests to lock in today';
+ const L=lvlOf(S.xp),a=xpFor(L),b=xpFor(L+1);$('lvl').textContent='Level '+L;$('lvlnext').textContent=(b-S.xp)+' XP to level '+(L+1);$('lvlbar').style.width=(S.xp-a)/(b-a)*100+'%';
+ const w=[];for(let i=6;i>=0;i--){const t=new Date();t.setDate(t.getDate()-i);w.push(`<div>${'SMTWTFS'[t.getDay()]}<b class="${doneReq(S.days[day(t)])?'on':''} ${i?'':'now'}">${t.getDate()}</b></div>`)}
+ $('week').innerHTML=w.join('');
+ const tot=d.musicMin+(d.musicStart?(Date.now()-d.musicStart)/60000:0),m=Math.min(tot,60);
+ $('itime').innerHTML=`${Math.floor(m)}:${String(Math.floor(m%1*60)).padStart(2,'0')} <small>/ 60:00</small>`;$('iprog').style.width=m/60*100+'%';
+ $('istart').textContent=d.musicStart?'Pause session':tot>=60?'Complete':'Start session';
+ const jl=(d.journal||'').trim().length;$('jcount').textContent=jl>=60?'Done':jl+' / 60';
+ if(wasLocked===false&&locked){S.xp+=50;if(st%7===0&&S.shields<2){S.shields++;setTimeout(()=>toast('7-day streak · +1 shield'),2000)}save();toast('Locked in · +50 XP');$('xp').textContent=S.xp;if(navigator.vibrate)navigator.vibrate(30)}
+ wasLocked=locked}
+const h=new Date().getHours();$('greet').textContent=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+$('date').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+document.addEventListener('click',e=>{const b=e.target.closest('.item');if(!b)return;const k=b.dataset.k,d=D();
+ if(k==="journal"){go('journal');$('journal').focus({preventScroll:true});return}
+ if(k==="music"){go('practice');return}
+ const xp=(BON.find(x=>x[0]===k)||[0,0,0,10])[3];d[k]=!d[k];S.xp=Math.max(0,S.xp+(d[k]?xp:-xp));if(d[k])toast(`+${xp} XP`);save();render()});
+$('journal').value=D().journal;$('journal').oninput=e=>{D().journal=e.target.value;save();render()};
+function stopMusic(){const d=D();if(d.musicStart){d.musicMin+=(Date.now()-d.musicStart)/60000;d.musicStart=0}}
+$('istart').onclick=()=>{const d=D();if(d.musicStart)stopMusic();else if(d.musicMin<60)d.musicStart=Date.now();save();render()};
+$('iadd').onclick=()=>{stopMusic();D().musicMin+=15;save();render()};
+setInterval(()=>{const d=D();if(d.musicStart&&d.musicMin+(Date.now()-d.musicStart)/60000>=60){stopMusic();save()}render()},1000);
+let napEnd=0,ac;
+function beep(){try{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.25,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+1.2);o.start();o.stop(ac.currentTime+1.2)}catch(e){}}
+$('nstart').onclick=()=>{try{ac=ac||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+ if(napEnd){napEnd=0;$('nstart').textContent='Start nap timer';$('ntime').textContent='20:00';return}
+ napEnd=Date.now()+20*60000;$('nstart').textContent='Cancel'};
+setInterval(()=>{if(!napEnd)return;const r=Math.max(0,napEnd-Date.now());$('ntime').textContent=`${Math.floor(r/60000)}:${String(Math.floor(r/1000)%60).padStart(2,'0')}`;
+ if(!r){napEnd=0;beep();setTimeout(beep,1400);toast('Time to get up · head outside');$('nstart').textContent='Start nap timer'}},500);
+const W=$('whyin'),showWhy=()=>{const v=S.why||'';$('whytext').textContent=v||'Tap "Edit my why" below to set your reason.';W.value=v};
+$('editwhy').onclick=()=>{go('today');W.hidden=false;W.focus()};
+W.oninput=()=>{S.why=W.value;save();showWhy()};W.onkeydown=e=>{if(e.key==='Enter')W.hidden=true};showWhy();
+$('plans').innerHTML=REQ.map(([k,,n,s])=>`<input data-p="${k}" aria-label="Plan for ${n}" placeholder="${n} (${s.split(' ·')[0]}): after I ___">`).join('');
+$('plans').querySelectorAll('input').forEach(i=>{i.value=S.plans[i.dataset.p]||'';i.oninput=()=>{S.plans[i.dataset.p]=i.value;save();render()}});
+$('pair').value=S.pair||'';$('pair').oninput=e=>{S.pair=e.target.value;save()};
+$('share').onclick=async()=>{const t=`I'm on a ${streak()}-day Locked In streak. Brush 2×, skincare 2×, journal, 1 hr of practice, 10 min of daylight every day. Start yours and let's both keep going.`;try{await navigator.clipboard.writeText(t);toast('Copied, send it to a friend')}catch(e){toast('Copy not allowed here')}};
+const dow=new Date().getDay(),dom=new Date().getDate();
+$('banner').textContent=S._shieldMsg?`A shield saved your streak (${S._shieldMsg} missed day). Lock in today.`:dow===1?'New week, fresh start. Make day 1 count.':dom===1?'New month, fresh start.':S.pair?'Your pairing: '+S.pair:'';
+delete S._shieldMsg;save();
+function go(t){if(!$('t-'+t))t='today';document.querySelectorAll('.tab').forEach(e=>e.hidden=e.id!=='t-'+t);
+ document.querySelectorAll('.tb').forEach(b=>b.dataset.t===t?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
+ if(t==='journal')hist();scrollTo(0,0);try{history.replaceState(null,'','#'+t)}catch(e){}}
+document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>go(b.dataset.t));
+function hist(){const ks=Object.keys(S.days).filter(k=>k<T()&&(S.days[k].journal||'').trim()).sort().reverse();
+ const el=$('jhist');el.innerHTML=ks.length?'':'<p class="empty">Your past entries will show up here.</p>';
+ for(const k of ks){const d=document.createElement('div');d.className='jh';const sm=document.createElement('small');
+  sm.textContent=new Date(k+'T12:00').toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});const pp=document.createElement('p');pp.textContent=S.days[k].journal;d.append(sm,pp);el.append(d)}}
+go((location.hash||'').slice(1));
+(()=>{const f={brushAM:1,brushPM:1,skinAM:1,skinPM:1,journal:'x'.repeat(60),musicMin:60,light:1};console.assert(doneReq(f)&&!doneReq({...f,musicMin:59})&&lvlOf(xpFor(3))===3,'self-check failed')})();
+render();
+}
+</script><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
+</body></html>
