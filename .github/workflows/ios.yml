@@ -1,0 +1,32 @@
+name: Build iOS app (unsigned .ipa for sideloading)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["index.html", "native/**", ".github/workflows/ios.yml"]
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Create Capacitor project
+        run: |
+          mkdir -p cap/www && cd cap
+          cp ../index.html ../manifest.json ../icon-*.png www/
+          npm init -y >/dev/null
+          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7
+          npx cap init "Locked In" com.lockedin.app --web-dir www
+          npx cap add ios
+          cp ../native/icon-1024.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          npx cap sync ios
+      - name: Build unsigned app
+        run: |
+          cd cap/ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" | tail -20
+          mkdir Payload && cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qr ../../../LockedIn.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with: { name: LockedIn-ipa, path: LockedIn.ipa }
